@@ -33,4 +33,4 @@ class KFold(object):
             estimator.fit(X_train, y_train)
             scores.append(estimator.score(train, test))
 
-        return scores, np.argmax(scores)
+        return scores
