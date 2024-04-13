@@ -83,5 +83,6 @@ class LogisticRegression:
 
     def score(self, X, y):
         prediction = self.predict(X)
+        y = y.flatten()
         accuracy = np.mean(prediction == y)
         return accuracy
