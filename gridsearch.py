@@ -24,6 +24,9 @@ class GridSearch:
             scores = self.kf.cross_validate(self.estimator, X, y)
             score = sum(scores) / len(scores)
 
+            print("Params:", params, "Score:", score)
+            print("Weights:", self.estimator.weights)
+
             if score > best_score:
                 best_score = score
                 best_params = params
