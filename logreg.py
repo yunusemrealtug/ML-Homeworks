@@ -32,6 +32,9 @@ class LogisticRegression:
         self.weights = np.zeros(n)
 
         convergence = False
+        tol_count = 0
+
+        self.losses = np.array([])
 
         for i in range(self.max_iter):
             gradient = 0
@@ -45,16 +48,41 @@ class LogisticRegression:
                 )
             gradient /= m
 
+            # print("Before Gradient Update:", gradient)
             if self.penalty == "l2":
+                # print("gradient modified")
+                # print("Delta:", 2*self.alpha*self.weights)
                 gradient += 2 * self.alpha * self.weights
+
+            # print("Before Gradient Update:", gradient)
 
             self.weights -= self.learning_rate * gradient
             # print(f"Epoch {i}:", (-self.learning_rate*gradient))
 
-            if np.max(np.abs(self.learning_rate * gradient)) < self.tol:
+            loss = 0
+            for j in range(m):
+                loss += np.log(1 + np.exp(-y[j] * self.weights.dot(X[j])))
+
+            loss /= m
+
+            if self.penalty == "l2":
+                loss += self.alpha * (np.sum(self.weights**2) ** 0.5)
+
+            self.losses = np.append(self.losses, loss)
+
+            if i > 0 and self.losses[-2] - self.losses[-1] < self.tol:
+                tol_count += 1
+            else:
+                tol_count = 0
+
+            if tol_count >= self.n_iter_no_change:
                 convergence = True
                 print(f"Gradient descent converged at step {i}.")
                 break
+            # if np.max(np.abs(self.learning_rate * gradient)) < self.tol:
+            #     convergence = True
+            #     print(f"Gradient descent converged at step {i}.")
+            #     break
 
         if not convergence:
             print(
@@ -69,6 +97,7 @@ class LogisticRegression:
         convergence = False
         tol_count = 0
 
+        self.losses = np.array([])
         for i in range(self.max_iter):
             rand_index = np.random.randint(m)
             X_rand, y_rand = X[rand_index], y[rand_index]
@@ -81,18 +110,30 @@ class LogisticRegression:
             )
 
             if self.penalty == "l2":
+                # print("gradient modified")
                 gradient += 2 * self.alpha * self.weights
 
-            learning_rate = self.learning_rate  # / (1 + i * self.decay_rate)
+            learning_rate = self.learning_rate / (1 + i * self.decay_rate)
             self.weights -= learning_rate * gradient
             # print(rand_index)
             # print(gradient)
             # print(f"Epoch {i}:", (-self.learning_rate * gradient))
 
-            if np.max(np.abs(learning_rate * gradient)) < self.tol:
+            loss = np.log(1 + np.exp(-y_rand * self.weights.dot(X_rand)))
+
+            if self.penalty == "l2":
+                loss += self.alpha * (np.sum(self.weights**2) ** 0.5)
+
+            self.losses = np.append(self.losses, loss)
+
+            if i > 0 and self.losses[-2] - self.losses[-1] < self.tol:
                 tol_count += 1
             else:
                 tol_count = 0
+            # if np.max(np.abs(learning_rate * gradient)) < self.tol:
+            #     tol_count += 1
+            # else:
+            #     tol_count = 0
 
             if tol_count >= self.n_iter_no_change:
                 convergence = True
