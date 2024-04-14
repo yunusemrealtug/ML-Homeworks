@@ -56,7 +56,7 @@ stoc_grid = GridSearch(
 # metadata# variable information
 kf = KFold(n_splits=5, shuffle=True, random_state=None)
 
-logreg = LogisticRegression(max_iter=1000, tol=0.0001)
+logreg = LogisticRegression(max_iter=1000, tol=0.001)
 scores = kf.cross_validate(logreg, X, y)
 print(sum(scores) / len(scores))
 
@@ -70,8 +70,9 @@ logreg = LogisticRegression(
     penalty=None,
     max_iter=10000,
     learning_rate=0.0001,
-    tol=1e-4,
-    n_iter_no_change=100,
+    tol=3e-5,
+    n_iter_no_change=200,
+    decay_rate=0,
 )
 scores = kf.cross_validate(logreg, X, y)
 print(sum(scores) / len(scores))

@@ -29,8 +29,8 @@ class KFold(object):
 
     def cross_validate(self, estimator, X, y):
         scores = []
-        for train, test, X_train, y_train in self.split(X, y):
-            estimator.fit(X_train, y_train)
-            scores.append(estimator.score(train, test))
+        for X_test, y_test, X_train, y_train in self.split(X, y):
+            estimator.fit(X_train, y_train, X_test, y_test)
+            scores.append(estimator.score(X_test, y_test))
 
         return scores

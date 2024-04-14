@@ -27,9 +27,12 @@ class LogisticRegression:
     def _sigmoid(z):
         return 1 / (1 + np.exp(-z))
 
-    def _gradient_descent(self, X, y):
+    def _gradient_descent(self, X, y, X_val=None, y_val=None):
         m, n = X.shape
         self.weights = np.zeros(n)
+
+        if X_val is None or y_val is None:
+            X_val, y_val = X, y
 
         convergence = False
         tol_count = 0
@@ -60,10 +63,10 @@ class LogisticRegression:
             # print(f"Epoch {i}:", (-self.learning_rate*gradient))
 
             loss = 0
-            for j in range(m):
-                loss += np.log(1 + np.exp(-y[j] * self.weights.dot(X[j])))
+            for j in range(X_val.shape[0]):
+                loss += np.log(1 + np.exp(-y_val[j] * self.weights.dot(X_val[j])))
 
-            loss /= m
+            loss /= X_val.shape[0]
 
             if self.penalty == "l2":
                 loss += self.alpha * (np.sum(self.weights**2) ** 0.5)
@@ -90,9 +93,12 @@ class LogisticRegression:
             Consider increasing the iteration limit."""
             )
 
-    def _stochastic_gradient_descent(self, X, y):
+    def _stochastic_gradient_descent(self, X, y, X_val=None, y_val=None):
         m, n = X.shape
         self.weights = np.zeros(n)
+
+        if X_val is None or y_val is None:
+            X_val, y_val = X, y
 
         convergence = False
         tol_count = 0
@@ -119,7 +125,11 @@ class LogisticRegression:
             # print(gradient)
             # print(f"Epoch {i}:", (-self.learning_rate * gradient))
 
-            loss = np.log(1 + np.exp(-y_rand * self.weights.dot(X_rand)))
+            loss = 0
+            for j in range(X_val.shape[0]):
+                loss += np.log(1 + np.exp(-y_val[j] * self.weights.dot(X_val[j])))
+
+            loss /= X_val.shape[0]
 
             if self.penalty == "l2":
                 loss += self.alpha * (np.sum(self.weights**2) ** 0.5)
@@ -146,7 +156,7 @@ class LogisticRegression:
             Consider increasing the iteration limit."""
             )
 
-    def fit(self, X, y):
+    def fit(self, X, y, X_val, y_val):
         if self.penalty not in [None, "l2"]:
             raise ValueError("Penalty must be None or 'l2'.")
 
@@ -154,8 +164,9 @@ class LogisticRegression:
             raise ValueError("Alpha must be provided for L2 penalty.")
 
         X = np.insert(X, 0, 1, axis=1)  # Adding bias term
-        if self.penalty == "l2":
-            self.alpha /= len(X)
+
+        if X_val is not None:
+            X_val = np.insert(X_val, 0, 1, axis=1)
 
         if self.max_iter <= 0:
             raise ValueError("Maximum number of iterations must be greater than 0.")
@@ -164,9 +175,9 @@ class LogisticRegression:
             raise ValueError("Length of X and y must be the same.")
 
         if self.stochastic:
-            self._stochastic_gradient_descent(X, y)
+            self._stochastic_gradient_descent(X, y, X_val, y_val)
         else:
-            self._gradient_descent(X, y)
+            self._gradient_descent(X, y, X_val, y_val)
 
     def predict(self, X):
         X = np.insert(X, 0, 1, axis=1)  # Adding bias term
