@@ -61,7 +61,7 @@ stoc_grid = GridSearch(
 X_train, y_train, X_test, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 X_train, y_train, X_val, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
-logreg = LogisticRegression(learning_rate=0.1, max_iter=300, penalty=None)
+logreg = LogisticRegression(learning_rate=0.01, max_iter=1000, tol=1e-4, penalty=None)
 logreg.fit(X_train, y_train, X_val, y_val)
 scores = logreg.score(X_train, y_train)
 print("Training Score GD without L2: ", np.mean(scores))
@@ -77,7 +77,7 @@ print("Test Score GD with L2: ", np.mean(scores))
 
 stoc_logreg = LogisticRegression(
     stochastic=True,
-    learning_rate=1e-6,
+    learning_rate=1e-4,
     tol=1e-3,
     n_iter_no_change=10,
     max_iter=1000,
@@ -106,5 +106,48 @@ print("Test Score SGD with L2: ", np.mean(scores))
 
 plt.plot(logreg.losses, label="gradient descent")
 plt.plot(stoc_logreg.losses, label="stochastic gradient descent")
+plt.legend()
+plt.show()
+
+stoc_logreg_slow = LogisticRegression(
+    stochastic=True,
+    learning_rate=1e-7,
+    tol=1e-3,
+    n_iter_no_change=10,
+    max_iter=10000,
+    decay_rate=0,
+)
+
+stoc_logreg_slow.fit(X_train, y_train, X_val, y_val)
+scores = stoc_logreg_slow.score(X_test, y_test)
+
+stoc_logreg_fast = LogisticRegression(
+    stochastic=True,
+    learning_rate=1e-5,
+    tol=1e-3,
+    n_iter_no_change=10,
+    max_iter=1000,
+    decay_rate=0,
+)
+
+stoc_logreg_fast.fit(X_train, y_train, X_val, y_val)
+scores = stoc_logreg_fast.score(X_test, y_test)
+
+stoc_logreg_very_fast = LogisticRegression(
+    stochastic=True,
+    learning_rate=1e-3,
+    tol=1e-3,
+    n_iter_no_change=10,
+    max_iter=1000,
+    decay_rate=0,
+)
+
+stoc_logreg_very_fast.fit(X_train, y_train, X_val, y_val)
+scores = stoc_logreg_very_fast.score(X_test, y_test)
+
+plt.plot(stoc_logreg_slow.losses, label="stochastic gradient descent lr=1e-7")
+plt.plot(stoc_logreg.losses, label="stochastic gradient descent lr=1e-6")
+plt.plot(stoc_logreg_fast.losses, label="stochastic gradient descent lr=1e-5")
+plt.plot(stoc_logreg_very_fast.losses, label="stochastic gradient descent lr=1e-3")
 plt.legend()
 plt.show()
