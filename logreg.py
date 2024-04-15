@@ -30,6 +30,7 @@ class LogisticRegression:
     def _gradient_descent(self, X, y, X_val=None, y_val=None):
         m, n = X.shape
         # initialize weights to random values
+        np.random.seed(42)
         self.weights = np.random.rand(n)
 
         if X_val is None or y_val is None:
@@ -41,6 +42,16 @@ class LogisticRegression:
         tol_count = 0
 
         self.losses = np.array([])
+
+        first_loss = 0
+        for j in range(X_val.shape[0]):
+            first_loss += np.log(1 + np.exp(-y_val[j] * self.weights.dot(X_val[j])))
+        first_loss /= X_val.shape[0]
+
+        if self.penalty == "l2":
+            first_loss += self.alpha * (np.sum(self.weights**2) ** 0.5)
+
+        self.losses = np.append(self.losses, first_loss)
 
         for i in range(self.max_iter):
             gradient = -np.mean(
@@ -67,8 +78,6 @@ class LogisticRegression:
             if self.penalty == "l2":
                 loss += self.alpha * (np.sum(self.weights**2) ** 0.5)
 
-            print(f"Epoch {i}:", loss)
-
             self.losses = np.append(self.losses, loss)
 
             if np.isnan(loss):
@@ -93,6 +102,8 @@ class LogisticRegression:
 
     def _stochastic_gradient_descent(self, X, y, X_val=None, y_val=None):
         m, n = X.shape
+        # initialize weights to random values
+        np.random.seed(42)
         self.weights = np.random.rand(n)
 
         if X_val is None or y_val is None:
@@ -102,11 +113,24 @@ class LogisticRegression:
         tol_count = 0
 
         self.losses = np.array([])
+
+        first_loss = 0
+        for j in range(X_val.shape[0]):
+            first_loss += np.log(1 + np.exp(-y_val[j] * self.weights.dot(X_val[j])))
+        first_loss /= X_val.shape[0]
+
+        if self.penalty == "l2":
+            first_loss += self.alpha * (np.sum(self.weights**2) ** 0.5)
+
+        self.losses = np.append(self.losses, first_loss)
+
         for i in range(self.max_iter):
 
             X_perm, y_perm = X.copy(), y.copy()
             perm = np.random.permutation(m)
             X_perm, y_perm = X_perm[perm], y_perm[perm]
+
+            learning_rate = self.learning_rate / (1 + i * self.decay_rate)
 
             for j in range(m):
                 X_rand, y_rand = X_perm[j], y_perm[j]
@@ -119,10 +143,8 @@ class LogisticRegression:
                 )
 
                 if self.penalty == "l2":
-                    # print("gradient modified")
                     gradient += 2 * self.alpha * self.weights
 
-                learning_rate = self.learning_rate / (1 + i * self.decay_rate)
                 self.weights -= learning_rate * gradient
 
             loss = 0
