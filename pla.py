@@ -44,20 +44,19 @@ def analyze_dataset(data, labels, title, initial_weights=None):
     w, iterations = perceptron_learning_algorithm(data, labels, initial_weights=initial_weights)
     print("Converged in", iterations, "iterations for", title)
     plot_dataset_with_decision_boundary(data, labels, w, title)
+    return w
 
 analyze_dataset(data_small[:, 1:], label_small, "Small Dataset")
 
 analyze_dataset(data_large[:, 1:], label_large, "Large Dataset")
 
 def repeat_training(data, labels, num_trials=5):
-    weights = []
     num_features = data.shape[1]
     for _ in range(num_trials):
         initial_weights = np.random.randn(num_features + 1)
-        analyze_dataset(data, labels, "Dataset with Different Initial Weights", initial_weights=initial_weights)
-    return 1
-
-weights_small = repeat_training(data_small[:, 1:], label_small)
+        print(analyze_dataset(data, labels, "Dataset with Different Initial Weights", initial_weights=initial_weights))
+    
+repeat_training(data_small[:, 1:], label_small)
 
 
 

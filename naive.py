@@ -60,5 +60,5 @@ y_pred_training = predict(X_train, class_stats)
 accuracyTrain = np.mean(y_pred_training == y_train)
 accuracyTest = np.mean(y_pred_test == y_test)
 
-print("Naive Bayes Classifier Accuracy:", accuracyTrain)
-print("Naive Bayes Classifier Accuracy:", accuracyTest)
+print("Naive Bayes Classifier Accuracy: Train", accuracyTrain)
+print("Naive Bayes Classifier Accuracy: Test", accuracyTest)
