@@ -7,6 +7,8 @@ from kfold import KFold
 from logreg import LogisticRegression
 from split import train_test_split
 
+import time 
+
 # fetch dataset
 rice_cammeo_and_osmancik = fetch_ucirepo(id=545)
 
@@ -25,12 +27,10 @@ grid = GridSearch(
     {
         # "stochastic": [False],
         # "penalty": ["l2", None],
-        # "penalty": ["l2"],
         # "max_iter": [30, 100, 300],
         # "learning_rate": [1e-3, 3e-3, 1e-2, 3e-2],
         # "tol": [1e-4, 1e-3, 1e-2],
         # "n_iter_no_change": [3, 5, 7],
-        # "alpha": [1e3, 3e3, 1e4, 3e4, 1e5]
         "tol": [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2],
         # "alpha": [1, 3, 10, 30],
     },
@@ -68,12 +68,20 @@ print("Training Score GD without L2: ", np.mean(scores))
 scores = logreg.score(X_test, y_test)
 print("Test Score GD without L2: ", np.mean(scores))
 
+start_time = time.time()
+
 logreg = LogisticRegression(tol=3e-4)
 logreg.fit(X_train, y_train, X_val, y_val)
 scores = logreg.score(X_train, y_train)
 print("Training Score GD with L2: ", np.mean(scores))
 scores = logreg.score(X_test, y_test)
 print("Test Score GD with L2: ", np.mean(scores))
+
+# Record the end time
+end_time = time.time()
+
+# Calculate the elapsed time
+gd_time = end_time - start_time
 
 stoc_logreg = LogisticRegression(
     stochastic=True,
@@ -90,6 +98,8 @@ print("Training Score SGD without L2: ", np.mean(scores))
 scores = stoc_logreg.score(X_test, y_test)
 print("Test Score SGD without L2: ", np.mean(scores))
 
+start_time = time.time()
+
 stoc_logreg = LogisticRegression(
     stochastic=True,
     learning_rate=1e-6,
@@ -103,6 +113,15 @@ scores = stoc_logreg.score(X_train, y_train)
 print("Training Score SGD with L2: ", np.mean(scores))
 scores = stoc_logreg.score(X_test, y_test)
 print("Test Score SGD with L2: ", np.mean(scores))
+
+# Record the end time
+end_time = time.time()
+
+# Calculate the elapsed time
+sgd_time = end_time - start_time
+
+print("Time taken for Gradient Descent: ", gd_time)
+print("Time taken for Stochastic Gradient Descent: ", sgd_time)
 
 plt.plot(logreg.losses, label="gradient descent")
 plt.plot(stoc_logreg.losses, label="stochastic gradient descent")
@@ -133,21 +152,8 @@ stoc_logreg_fast = LogisticRegression(
 stoc_logreg_fast.fit(X_train, y_train, X_val, y_val)
 scores = stoc_logreg_fast.score(X_test, y_test)
 
-stoc_logreg_very_fast = LogisticRegression(
-    stochastic=True,
-    learning_rate=1e-3,
-    tol=1e-3,
-    n_iter_no_change=10,
-    max_iter=1000,
-    decay_rate=0,
-)
-
-stoc_logreg_very_fast.fit(X_train, y_train, X_val, y_val)
-scores = stoc_logreg_very_fast.score(X_test, y_test)
-
 plt.plot(stoc_logreg_slow.losses, label="stochastic gradient descent lr=1e-7")
 plt.plot(stoc_logreg.losses, label="stochastic gradient descent lr=1e-6")
 plt.plot(stoc_logreg_fast.losses, label="stochastic gradient descent lr=1e-5")
-plt.plot(stoc_logreg_very_fast.losses, label="stochastic gradient descent lr=1e-3")
 plt.legend()
 plt.show()
