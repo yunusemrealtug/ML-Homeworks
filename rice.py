@@ -152,6 +152,10 @@ stoc_logreg_fast = LogisticRegression(
 stoc_logreg_fast.fit(X_train, y_train, X_val, y_val)
 scores = stoc_logreg_fast.score(X_test, y_test)
 
+print("Final loss SGD slow: ", stoc_logreg_slow.losses[-1])
+print("Final loss SGD fast: ", stoc_logreg_fast.losses[-1])
+print("Final loss SGD: ", stoc_logreg.losses[-1])
+
 plt.plot(stoc_logreg_slow.losses, label="stochastic gradient descent lr=1e-7")
 plt.plot(stoc_logreg.losses, label="stochastic gradient descent lr=1e-6")
 plt.plot(stoc_logreg_fast.losses, label="stochastic gradient descent lr=1e-5")
