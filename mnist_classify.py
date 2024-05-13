@@ -23,8 +23,8 @@ X = X[indices]
 y = y[indices]
 
 # Split the data into training and test sets of size 20000 and 4000 respectively
-X_train, X_test = X[:2000], X[20000:24000]
-y_train, y_test = y[:2000], y[20000:24000]
+X_train, X_test = X[:20000], X[20000:24000]
+y_train, y_test = y[:20000], y[20000:24000]
 
 # from scratch primal svc
 primal_svm = PrimalSVC()
