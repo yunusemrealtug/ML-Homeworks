@@ -2,6 +2,10 @@ import numpy as np
 from cvxopt import matrix, solvers
 
 
+def linear_kernel(x, z):
+    return np.matmul(x, z.T)
+
+
 class SVC:
     def __init__(self, C=1.0, dual=False):
         self.C = C
@@ -23,6 +27,7 @@ class SVC:
 
     def calc_primal(self, X, y):
         num_samples, num_features = X.shape
+
         # Construct the QP problem
         Q = np.zeros((num_features + 1 + num_samples, num_features + 1 + num_samples))
         Q[:num_features, :num_features] = np.eye(num_features)
@@ -51,16 +56,75 @@ class SVC:
         return weights
 
     def calc_dual(self, X, y):
-        pass
+        num_samples, num_features = X.shape
+
+        P = np.dot(y[:, np.newaxis] * X, (y[:, np.newaxis] * X).T)
+        P = matrix(P)
+
+        q = -np.ones(num_samples)
+        q = matrix(q)
+
+        G = np.vstack((np.eye(num_samples), -np.eye(num_samples)))
+        G = matrix(G)
+
+        h = np.hstack((self.C * np.ones(num_samples), np.zeros(num_samples)))
+        h = matrix(h)
+
+        A = y[np.newaxis, :].astype(np.float64)
+        A = matrix(A)
+
+        b = matrix(0.0)
+
+        # Solve the QP problem
+        solvers.options["show_progress"] = False
+        sol = solvers.qp(P, q, G, h, A, b)
+
+        alphas = np.array(sol["x"]).flatten()
+
+        ind = (alphas > 1e-4).flatten()
+        Xs = X[ind]
+        ys = y[ind]
+        alphas = alphas[ind]
+
+        b = ys - np.sum(linear_kernel(Xs, Xs) * alphas * ys, axis=0)
+        b = np.sum(b) / b.size
+
+        return np.concatenate(
+            (np.array([alphas.shape[0]]), np.array([b]), alphas, ys, Xs.flatten())
+        )
 
     def predict(self, X):
         if self.classifiers == {}:
             raise Exception("Model not trained yet!")
 
-        predictions = np.zeros((X.shape[0], len(self.classes)))
-        for i, class_label in enumerate(self.classes):
-            w = self.classifiers[class_label][1:]
-            b = self.classifiers[class_label][0]
-            predictions[:, i] = np.dot(X, w) + b
+        if not self.dual:
+            predictions = np.zeros((X.shape[0], len(self.classes)))
+            for i, class_label in enumerate(self.classes):
+                w = self.classifiers[class_label][1:]
+                b = self.classifiers[class_label][0]
+                predictions[:, i] = np.dot(X, w) + b
 
-        return self.classes[np.argmax(predictions, axis=1)]
+            return self.classes[np.argmax(predictions, axis=1)]
+        else:
+            predictions = np.zeros((X.shape[0], len(self.classes)))
+            for i, class_label in enumerate(self.classes):
+                alphas_count = int(self.classifiers[class_label][0])
+                b = self.classifiers[class_label][1]
+                alphas = self.classifiers[class_label][2 : alphas_count + 2]
+                ys = self.classifiers[class_label][
+                    alphas_count + 2 : 2 * alphas_count + 2
+                ]
+                Xs = self.classifiers[class_label][2 * alphas_count + 2 :]
+
+                Xs = np.reshape(Xs, (alphas_count, X.shape[1]))
+                predictions[:, i] = (
+                    np.sum(
+                        linear_kernel(Xs, X)
+                        * alphas[:, np.newaxis]
+                        * ys[:, np.newaxis],
+                        axis=0,
+                    )
+                    + b
+                )
+
+            return self.classes[np.argmax(predictions, axis=1)]
