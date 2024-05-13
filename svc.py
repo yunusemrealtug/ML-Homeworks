@@ -2,9 +2,10 @@ import numpy as np
 from cvxopt import matrix, solvers
 
 
-class PrimalSVC:
-    def __init__(self, C=1.0):
+class SVC:
+    def __init__(self, C=1.0, dual=False):
         self.C = C
+        self.dual = dual
         self.classes = None
         self.classifiers = {}
 
@@ -14,9 +15,13 @@ class PrimalSVC:
 
         for i, class_label in enumerate(self.classes):
             y_binary = np.where(y == class_label, 1, -1)
-            self.classifiers[class_label] = self._fit(X, y_binary)
+            self.classifiers[class_label] = (
+                self.calc_dual(X, y_binary)
+                if self.dual
+                else self.calc_primal(X, y_binary)
+            )
 
-    def _fit(self, X, y):
+    def calc_primal(self, X, y):
         num_samples, num_features = X.shape
         # Construct the QP problem
         Q = np.zeros((num_features + 1 + num_samples, num_features + 1 + num_samples))
@@ -45,20 +50,8 @@ class PrimalSVC:
         weights = np.concatenate((np.array([b]), w.flatten()))
         return weights
 
-        # print(sol['x'])
-
-        # # Extract lagrange multipliers
-        # alphas = np.array(sol["x"])
-
-        # # Extract support vectors
-        # sv_idx = (alphas > 1e-5).flatten()
-        # self.support_vectors = X[sv_idx]
-        # self.support_labels = y[sv_idx]
-        # self.alphas = alphas[sv_idx]
-
-        # # Compute the weight vector and bias term
-        # self.w = np.dot(X.T, (self.alphas * y).reshape(-1, 1))
-        # self.b = np.mean(self.support_labels - np.dot(self.support_vectors, self.w))
+    def calc_dual(self, X, y):
+        pass
 
     def predict(self, X):
         if self.classifiers == {}:
