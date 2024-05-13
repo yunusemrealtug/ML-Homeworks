@@ -1,5 +1,6 @@
 import sklearn.svm
 from sklearn.datasets import fetch_openml
+from skimage.feature import hog
 from svc import SVC
 import numpy as np
 import time
@@ -35,7 +36,7 @@ y_pred = primal_svm.predict(X_test)
 accuracy = np.mean(y_pred == y_test)
 end = time.time()
 print("Part a accuracy: ", accuracy)
-print("Part a time(seconds): ", end-beginning)
+print("Part a time(seconds): ", end - beginning)
 
 # scikit primal svc
 beginning = time.time()
@@ -44,7 +45,7 @@ sklearn_svm.fit(X_train, y_train)
 accuracy = sklearn_svm.score(X_test, y_test)
 end = time.time()
 print("Part b accuracy: ", accuracy)
-print("Part b time(seconds): ", end-beginning)
+print("Part b time(seconds): ", end - beginning)
 
 # from scratch dual svc
 beginning = time.time()
@@ -54,7 +55,7 @@ y_pred = primal_svm.predict(X_test)
 accuracy = np.mean(y_pred == y_test)
 end = time.time()
 print("Part c accuracy: ", accuracy)
-print("Part c time(seconds): ", end-beginning)
+print("Part c time(seconds): ", end - beginning)
 
 # scikit dual formulation svc
 beginning = time.time()
@@ -63,4 +64,59 @@ sklearn_svm.fit(X_train, y_train)
 accuracy = sklearn_svm.score(X_test, y_test)
 end = time.time()
 print("Part d accuracy: ", accuracy)
-print("Part d time(seconds): ", end-beginning)
+print("Part d time(seconds): ", end - beginning)
+
+# extract features using hog
+hog_features_train = []
+hog_features_test = []
+
+for img in X_train:
+    hog_features_train.append(
+        hog(img.reshape((28, 28)), block_norm="L2-Hys", pixels_per_cell=(8, 8))
+    )
+
+for img in X_test:
+    hog_features_test.append(
+        hog(img.reshape((28, 28)), block_norm="L2-Hys", pixels_per_cell=(8, 8))
+    )
+
+hog_features_train = np.array(hog_features_train)
+hog_features_test = np.array(hog_features_test)
+
+# from scratch primal svc
+beginning = time.time()
+primal_svm = SVC()
+primal_svm.fit(hog_features_train, y_train)
+y_pred = primal_svm.predict(hog_features_test)
+accuracy = np.mean(y_pred == y_test)
+end = time.time()
+print("Part a accuracy: ", accuracy)
+print("Part a time(seconds): ", end - beginning)
+
+# scikit primal svc
+beginning = time.time()
+sklearn_svm = sklearn.svm.LinearSVC(dual=False)
+sklearn_svm.fit(hog_features_train, y_train)
+accuracy = sklearn_svm.score(hog_features_test, y_test)
+end = time.time()
+print("Part b accuracy: ", accuracy)
+print("Part b time(seconds): ", end - beginning)
+
+# from scratch dual svc
+beginning = time.time()
+primal_svm = SVC(dual=True)
+primal_svm.fit(hog_features_train, y_train)
+y_pred = primal_svm.predict(hog_features_test)
+accuracy = np.mean(y_pred == y_test)
+end = time.time()
+print("Part c accuracy: ", accuracy)
+print("Part c time(seconds): ", end - beginning)
+
+# scikit dual formulation svc
+beginning = time.time()
+sklearn_svm = sklearn.svm.SVC(kernel="rbf")
+sklearn_svm.fit(hog_features_train, y_train)
+accuracy = sklearn_svm.score(hog_features_test, y_test)
+end = time.time()
+print("Part d accuracy: ", accuracy)
+print("Part d time(seconds): ", end - beginning)
