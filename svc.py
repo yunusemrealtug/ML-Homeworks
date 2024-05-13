@@ -12,6 +12,7 @@ class SVC:
         self.dual = dual
         self.classes = None
         self.classifiers = {}
+        self.class_support_vector_indices = {}
 
     def fit(self, X, y):
 
@@ -20,7 +21,7 @@ class SVC:
         for i, class_label in enumerate(self.classes):
             y_binary = np.where(y == class_label, 1, -1)
             self.classifiers[class_label] = (
-                self.calc_dual(X, y_binary)
+                self.calc_dual(X, y_binary, class_label)
                 if self.dual
                 else self.calc_primal(X, y_binary)
             )
@@ -55,7 +56,7 @@ class SVC:
         weights = np.concatenate((np.array([b]), w.flatten()))
         return weights
 
-    def calc_dual(self, X, y):
+    def calc_dual(self, X, y, class_label=None):
         num_samples, num_features = X.shape
 
         P = np.dot(y[:, np.newaxis] * X, (y[:, np.newaxis] * X).T)
@@ -82,6 +83,7 @@ class SVC:
         alphas = np.array(sol["x"]).flatten()
 
         ind = (alphas > 1e-4).flatten()
+        self.class_support_vector_indices[class_label] = ind
         Xs = X[ind]
         ys = y[ind]
         alphas = alphas[ind]
@@ -128,3 +130,15 @@ class SVC:
                 )
 
             return self.classes[np.argmax(predictions, axis=1)]
+
+    def score(self, X, y):
+        y_pred = self.predict(X)
+        return np.mean(y_pred == y)
+
+    def get_support_vectors(self, class_label):
+        if self.classifiers == {}:
+            raise Exception("Model not trained yet!")
+        if self.dual:
+            return self.class_support_vector_indices[class_label]
+        else:
+            raise Exception("Primal form does not support support vector retrieval")

@@ -4,6 +4,7 @@ from skimage.feature import hog
 from svc import SVC
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 # Load the MNIST dataset
 X, y = fetch_openml("mnist_784", version=1, return_X_y=True, as_frame=False)
@@ -49,9 +50,9 @@ print("Part b time(seconds): ", end - beginning)
 
 # from scratch dual svc
 beginning = time.time()
-primal_svm = SVC(dual=True)
-primal_svm.fit(X_train, y_train)
-y_pred = primal_svm.predict(X_test)
+dual_svm = SVC(dual=True)
+dual_svm.fit(X_train, y_train)
+y_pred = dual_svm.predict(X_test)
 accuracy = np.mean(y_pred == y_test)
 end = time.time()
 print("Part c accuracy: ", accuracy)
@@ -104,9 +105,9 @@ print("Part b time(seconds): ", end - beginning)
 
 # from scratch dual svc
 beginning = time.time()
-primal_svm = SVC(dual=True)
-primal_svm.fit(hog_features_train, y_train)
-y_pred = primal_svm.predict(hog_features_test)
+dual_svm = SVC(dual=True)
+dual_svm.fit(hog_features_train, y_train)
+y_pred = dual_svm.predict(hog_features_test)
 accuracy = np.mean(y_pred == y_test)
 end = time.time()
 print("Part c accuracy: ", accuracy)
@@ -120,3 +121,18 @@ accuracy = sklearn_svm.score(hog_features_test, y_test)
 end = time.time()
 print("Part d accuracy: ", accuracy)
 print("Part d time(seconds): ", end - beginning)
+
+# get support vectors
+for i in [2, 3, 8, 9]:
+    support_indices = dual_svm.get_support_vectors(i)
+    image = np.reshape(X_train[np.where(support_indices)[0][0]], (28, 28))
+    plt.imshow(image, cmap="gray")
+    plt.title(f"Support vector for digit {i} vs all classifier")
+    plt.axis("off")
+    plt.show()
+
+    image = np.reshape(X_train[np.where(~support_indices)[0][0]], (28, 28))
+    plt.imshow(image, cmap="gray")
+    plt.title(f"Non-support vector for digit {i} vs all classifier")
+    plt.axis("off")
+    plt.show()
