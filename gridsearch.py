@@ -10,7 +10,7 @@ class GridSearch:
         self.n_fold = n_fold
         self.kf = KFold(n_splits=n_fold, shuffle=True, random_state=None)
 
-    def fit(self, X, y):
+    def fit(self, X, y, use_old_cross_validate=False): # 
         best_score = -np.inf
         best_params = None
 
@@ -21,11 +21,11 @@ class GridSearch:
             for key, value in params.items():
                 setattr(self.estimator, key, value)
 
-            scores = self.kf.cross_validate(self.estimator, X, y)
+            scores = self.kf.cross_validate(self.estimator, X, y, use_old_cross_validate)
             score = sum(scores) / len(scores)
 
             print("Params:", params, "Score:", score)
-            print("Weights:", self.estimator.weights)
+            # print("Weights:", self.estimator.weights)
 
             if score > best_score:
                 best_score = score

@@ -52,10 +52,10 @@ stoc_grid = GridSearch(
     n_fold=5,
 )
 
-# grid.fit(X, y)
+# grid.fit(X, y, use_old_cross_validate=True)
 # print(grid.best_params, grid.best_score)
 
-# stoc_grid.fit(X, y)
+# stoc_grid.fit(X, y, use_old_cross_validate=True)
 # print(stoc_grid.best_params, stoc_grid.best_score)
 
 X_train, y_train, X_test, y_test = train_test_split(X, y, test_size=0.2, random_state=42)

@@ -27,10 +27,14 @@ class KFold(object):
             ), np.concatenate([y[:start], y[stop:]])
             current = stop
 
-    def cross_validate(self, estimator, X, y):
+    def cross_validate(self, estimator, X, y, use_old=False):
         scores = []
         for X_test, y_test, X_train, y_train in self.split(X, y):
-            estimator.fit(X_train, y_train, X_test, y_test)
+            if not use_old:
+                estimator.fit(X_train, y_train)
+            else:
+                estimator.fit(X_train, y_train, X_test, y_test)
             scores.append(estimator.score(X_test, y_test))
 
         return scores
+
