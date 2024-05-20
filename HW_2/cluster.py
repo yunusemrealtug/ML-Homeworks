@@ -21,7 +21,7 @@ X = X / 255.0
 y = y.astype(np.int32)
 
 # Shuffle the data
-np.random.seed(44)
+np.random.seed(42)
 indices = np.random.permutation(X.shape[0])
 X = X[indices]
 y = y[indices]
@@ -98,55 +98,43 @@ def compute_sse(X, centroids, labels):
     return sse
     
 kmeans = KMeansA(n_clusters=4)
-skKeans = KMeans(n_clusters=4, n_init=10)
 kmeans_cosine = KMeansCosine(n_clusters=4)
 
 labels_train = kmeans.fit(X_train)
-labels_train_sk = skKeans.fit(X_train).labels_
 labels_train_cosine = kmeans_cosine.fit(X_train)
 
 accuracyEuclid = compute_accuracy(y_train, labels_train)
 accuracyCosine = compute_accuracy(y_train, labels_train_cosine)
-accuracySk = compute_accuracy(y_train, labels_train_sk)
 
 print("Clustering accuracy on training set with Euclidean Distance:", accuracyEuclid)
 print("Clustering accuracy on training set with Cosine Similarity:", accuracyCosine)
-print("Clustering accuracy on training set with Sklearn:", accuracySk)
 print()
 
 
 sse_train_euclid = compute_sse(X_train, kmeans.centroids, labels_train)
 sse_train_cosine = compute_sse(X_train, kmeans_cosine.centroids, labels_train_cosine)
-sse_train_sk = compute_sse(X_train, skKeans.cluster_centers_, labels_train_sk)
 
 print("SSE on training set with Euclidean Distance:", sse_train_euclid)
 print("SSE on training set with Cosine Similarity:", sse_train_cosine)
-print("SSE on training set with Sklearn:", sse_train_sk)
 print()
 
 # Predict clusters for test set
 labels_test = kmeans.fit(X_test)
 labels_test_cosine = kmeans_cosine.fit(X_test)
-labels_test_sk = skKeans.fit(X_test).labels_
-
 # Compute clustering accuracy on test set
 accuracy_test = compute_accuracy(y_test, labels_test)
 accuracy_test_cosine = compute_accuracy(y_test, labels_test_cosine)
-accuracy_test_sk = compute_accuracy(y_test, labels_test_sk)
 
 print("Clustering accuracy on test set with Euclidean Distance:", accuracy_test)
 print("Clustering accuracy on test set with Cosine Similarity:", accuracy_test_cosine)
-print("Clustering accuracy on test set with Sklearn:", accuracy_test_sk)
 print()
 
 # Compute SSE on test set
 sse_test = compute_sse(X_test, kmeans.centroids, labels_test)
 sse_test_cosine = compute_sse(X_test, kmeans_cosine.centroids, labels_test_cosine)
-sse_test_sk = compute_sse(X_test, skKeans.cluster_centers_, labels_test_sk)
 
 print("SSE on test set with Euclidean Distance:", sse_test)
 print("SSE on test set with Cosine Similarity:", sse_test_cosine)
-print("SSE on test set with Sklearn:", sse_test_sk)
 print()
 
 hog_features_train = []
@@ -166,50 +154,40 @@ hog_features_train = np.array(hog_features_train)
 hog_features_test = np.array(hog_features_test)
 
 labels_train_extracted = kmeans.fit(hog_features_train)
-labels_train_sk_extracted = skKeans.fit(hog_features_train).labels_
 labels_train_cosine_extracted = kmeans_cosine.fit(hog_features_train)
 
 accuracyEuclid_ex = compute_accuracy(y_train, labels_train_extracted)
 accuracyCosine_ex = compute_accuracy(y_train, labels_train_cosine_extracted)
-accuracySk_ex = compute_accuracy(y_train, labels_train_sk_extracted)
 
 print("Clustering accuracy on training set with Euclidean Distance and Excluded Features:", accuracyEuclid_ex)
 print("Clustering accuracy on training set with Cosine Similarity and Excluded Features:", accuracyCosine_ex)
-print("Clustering accuracy on training set with Sklearn: and Excluded Features", accuracySk_ex)
 print()
 
 sse_train_euclid_ex = compute_sse(hog_features_train, kmeans.centroids, labels_train_extracted)
 sse_train_cosine_ex = compute_sse(hog_features_train, kmeans_cosine.centroids, labels_train_cosine_extracted)
-sse_train_sk_ex = compute_sse(hog_features_train, skKeans.cluster_centers_, labels_train_sk_extracted)
 
 print("SSE on training set with Euclidean Distance: and Excluded Features", sse_train_euclid_ex)
 print("SSE on training set with Cosine Similarity: and Excluded Features", sse_train_cosine_ex)
-print("SSE on training set with Sklearn: and Excluded Features", sse_train_sk_ex)
 print()
 
 # Predict clusters for test set
 labels_test_ex = kmeans.fit(hog_features_test)
 labels_test_cosine_ex = kmeans_cosine.fit(hog_features_test)
-labels_test_sk_ex = skKeans.fit(hog_features_test).labels_
 
 # Compute clustering accuracy on test set
 accuracy_test_ex = compute_accuracy(y_test, labels_test_ex)
 accuracy_test_cosine_ex = compute_accuracy(y_test, labels_test_cosine_ex)
-accuracy_test_sk_ex = compute_accuracy(y_test, labels_test_sk_ex)
 
 print("Clustering accuracy on test set with Euclidean Distance: and Excluded Features", accuracy_test_ex)
 print("Clustering accuracy on test set with Cosine Similarity: and Excluded Features", accuracy_test_cosine_ex)
-print("Clustering accuracy on test set with Sklearn: and Excluded Features", accuracy_test_sk_ex)
 print()
 
 # Compute SSE on test set
 sse_test_ex = compute_sse(hog_features_test, kmeans.centroids, labels_test_ex)
 sse_test_cosine_ex = compute_sse(hog_features_test, kmeans_cosine.centroids, labels_test_cosine_ex)
-sse_test_sk_ex = compute_sse(hog_features_test, skKeans.cluster_centers_, labels_test_sk_ex)
 
 print("SSE on test set with Euclidean Distance: and Excluded Features", sse_test_ex)
 print("SSE on test set with Cosine Similarity: and Excluded Features", sse_test_cosine_ex)
-print("SSE on test set with Sklearn: and Excluded Features", sse_test_sk_ex)
 print()
 
 
